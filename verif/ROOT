@@ -9,12 +9,11 @@
  *)
 
 session OG = Main +
-  options [quick_and_dirty]
   theories
     "OG_Composition"
 
 session sched_prop_final = OG +
-  theories [quick_and_dirty]
+  theories
     EChronos_arm_sched_prop_bare_proof
 
 session sched_prop_final_skip = OG +

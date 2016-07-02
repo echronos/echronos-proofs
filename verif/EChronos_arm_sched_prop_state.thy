@@ -205,57 +205,60 @@ consts interrupt_policy :: "routine \<Rightarrow> routine set"
 (* definition "interrupt_policy i \<equiv> {i..<Suc nbRoutines} \<inter> {nbUsers..<Suc nbRoutines}" *)
 
 text\<open>The scheduler picks a user task (not an interrupt).\<close>
-lemma sched_picks_user:
+axiomatization where sched_picks_user:
   "sched_policy xs = t \<Longrightarrow> t= None \<or> (\<exists>n. t=Some n \<and> n \<in> U)"
-sorry
 
 text \<open>Running @{text handle_events} when the irq events set is empty returns the
         runnable set taken as input.\<close>
-lemma handle_events_empty:
+axiomatization where handle_events_empty:
   "handle_events {} runn = runn "
-sorry
 
 text\<open>user0 is the highest priority task. This is for the invariant to 
    be true initially, where user0 is picked to run first.\<close>
-lemma user0_is_highest:
+axiomatization where user0_is_highest:
   "sched_policy (\<lambda>n. if n\<in>U then Some True else None) = Some user0"
-sorry
 
-lemma interrupt_policy_svc\<^sub>a:
+axiomatization where interrupt_policy_svc\<^sub>a:
   "interrupt_policy svc\<^sub>a = I"
-sorry
+
+axiomatization where interrupt_policy_svc\<^sub>s:
+  "interrupt_policy svc\<^sub>s = I"
+
+axiomatization where interrupt_policy_self:
+  "x \<notin> interrupt_policy x"
+
+axiomatization where interrupt_policy_I:
+  "x \<in> I \<Longrightarrow> interrupt_policy x \<subseteq> I"
+
+axiomatization where interrupt_policy_I':
+  "interrupt_policy x \<subseteq> I'"
+
+axiomatization where interrupt_policy_U:
+  "x \<in> U \<Longrightarrow> interrupt_policy x = I'"
+
+axiomatization where interrupt_policy_mono:
+  "y \<in> interrupt_policy x \<Longrightarrow> interrupt_policy y \<subseteq> interrupt_policy x"
+
+lemma svc\<^sub>a_svc\<^sub>s_priority[simp]:
+  "svc\<^sub>a \<notin> interrupt_policy svc\<^sub>s"
+  "svc\<^sub>s \<notin> interrupt_policy svc\<^sub>a"
+  by (auto simp: interrupt_policy_svc\<^sub>s interrupt_policy_svc\<^sub>a)
 
 lemma interrupt_policy_svc\<^sub>a':
   "x \<in> I' \<Longrightarrow> svc\<^sub>a \<notin> interrupt_policy x"
-sorry
-
-lemma interrupt_policy_svc\<^sub>s:
-  "interrupt_policy svc\<^sub>s = I"
-sorry
+  unfolding I'_def
+  apply (erule UnE)
+   apply (fastforce dest: interrupt_policy_I)
+  apply (fastforce simp: interrupt_policy_self)
+  done
 
 lemma interrupt_policy_svc\<^sub>s':
   "x \<in> I' \<Longrightarrow> svc\<^sub>s \<notin> interrupt_policy x"
-sorry
-
-lemma interrupt_policy_self:
-  "x \<notin> interrupt_policy x"
-sorry
-
-lemma interrupt_policy_I:
-  "x \<in> I \<Longrightarrow> interrupt_policy x \<subseteq> I"
-sorry
-
-lemma interrupt_policy_I':
-  "interrupt_policy x \<subseteq> I'"
-sorry
-
-lemma interrupt_policy_U:
-  "x \<in> U \<Longrightarrow> interrupt_policy x = I'"
-sorry
-
-lemma interrupt_policy_mono:
-  "y \<in> interrupt_policy x \<Longrightarrow> interrupt_policy y \<subseteq> interrupt_policy x"
-sorry
+  unfolding I'_def
+  apply (erule UnE)
+   apply (fastforce dest: interrupt_policy_I)
+  apply (fastforce simp: interrupt_policy_self)
+  done
 
 lemma interrupt_policy_trans:
   "y \<in> interrupt_policy x \<Longrightarrow> z \<in> interrupt_policy y \<Longrightarrow> z \<in> interrupt_policy x"
@@ -269,11 +272,6 @@ lemma interrupt_policy_not_refl:
   apply (drule (1) interrupt_policy_trans)
   apply (simp add: interrupt_policy_self)
   done
-
-lemma svc\<^sub>a_svc\<^sub>s_priority[simp]:
-  "svc\<^sub>a \<notin> interrupt_policy svc\<^sub>s"
-  "svc\<^sub>s \<notin> interrupt_policy svc\<^sub>a"
-  by (auto simp: interrupt_policy_svc\<^sub>s interrupt_policy_svc\<^sub>a)
 
 (*--------------------------------------------------------------------------*)
 
