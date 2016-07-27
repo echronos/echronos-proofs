@@ -197,7 +197,6 @@ lemma eChronos_arm_sched_prop_stack_invs_proof:
       (\<forall>i \<in> U. \<exists>j \<in> U. snd (the (\<acute>contexts i)) = [j])\<rbrace> \<lbrace>True\<rbrace>
   eChronos_arm_sched_prop_stack_invs_prog
   \<lbrace>False\<rbrace>"
-(*<*)
   unfolding eChronos_arm_sched_prop_stack_invs_prog_defs
   unfolding inv_defs oghoare_inv_def
   apply (simp add: add_inv_aux_def o_def
@@ -232,32 +231,30 @@ done
             val clarsimp_ctxt = (ctxt
                 addsimps @{thms Int_Diff card_insert_if
                                 insert_Diff_if Un_Diff interrupt_policy_I
-                                sched_picks_user handle_events_empty helper16
+                                handle_events_empty helper16
                                 helper18 interrupt_policy_self
-                                user0_is_highest svc\<^sub>a_commute
+                                user0_is_highest
                                 interrupt_policy_mono sorted_by_policy_svc\<^sub>a
-                                helper21 helper22 helper25
-                                sorted_by_policy_U' sorted_by_policy_svc\<^sub>s_hd_svc\<^sub>a
-                                sorted_by_policy_svc\<^sub>a_hd_svc\<^sub>s}
+                                helper21 helper22 helper25}
                 delsimps @{thms disj_not1}
-                addSIs @{thms last_tl'}
-                addSDs @{thms helper28' helper27'})
+                addSIs @{thms last_tl'})
 
             val clarsimp_ctxt2 = (ctxt
                 addsimps @{thms neq_Nil_conv
                                 interrupt_policy_svc\<^sub>a'
                                 interrupt_policy_svc\<^sub>s'
                                 interrupt_policy_U helper25
-                                svc\<^sub>a_commute
                                 handle_events_empty}
                 delsimps @{thms disj_not1}
                 addDs @{thms })
                            |> Splitter.add_split @{thm split_if_asm}
                            |> Splitter.add_split @{thm split_if}
 
+            val clarsimp_ctxt3 = (put_simpset HOL_basic_ss ctxt)
+
             val fastforce_ctxt = (ctxt
                 addsimps @{thms sorted_by_policy_svc\<^sub>s_svc\<^sub>a sched_policy_Some_U
-                                interrupt_policy_U last_tl svc\<^sub>a_commute
+                                interrupt_policy_U last_tl
                                 helper26 sorted_by_policy_svc\<^sub>a''}
                 addDs @{thms })
                            |> Splitter.add_split @{thm split_if_asm}
@@ -274,15 +271,16 @@ done
                                             sorted_by_policy_svc\<^sub>a_single
                                             sorted_by_policy_svc\<^sub>s_single
                                             sorted_by_policy_U_single
-                                            sched_policy_Some_U
-                                            list.set_sel(2)
+                                            sched_picks_user
+                                            set_tl
                                             sorted_by_policy_empty'})
                          THEN'
                          ((TRY' o REPEAT_ALL_NEW)
                              (FORWARD (dresolve_tac ctxt
                                   @{thms helper21' helper27' helper28'})
                                   ctxt)))
-                THEN_ALL_NEW (TRY' (
+                THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
+                THEN' (TRY' (
                         SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
@@ -292,9 +290,7 @@ done
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-(*0*)(*387.120s elapsed time, 1266.652s cpu time, 127.624s GC time*)
-
-(*>*)
+  (*244.981s elapsed time, 588.972s cpu time, 55.924s GC time*)
 done
 
 lemma eChronos_arm_sched_prop_ghostP_S_stack_inv_proof:
@@ -304,7 +300,6 @@ lemma eChronos_arm_sched_prop_ghostP_S_stack_inv_proof:
   \<parallel>-\<^sub>i \<lbrace>\<acute>ghostP_S_stack_inv\<rbrace> \<lbrace>True\<rbrace>
   eChronos_arm_sched_prop_stack_invs_prog
   \<lbrace>False\<rbrace>"
-(*<*)
   unfolding eChronos_arm_sched_prop_stack_invs_prog_defs
   unfolding inv_defs oghoare_inv_def
   apply (simp add: add_inv_aux_def o_def
@@ -338,32 +333,30 @@ done
             val clarsimp_ctxt = (ctxt
                 addsimps @{thms Int_Diff card_insert_if
                                 insert_Diff_if Un_Diff interrupt_policy_I
-                                sched_picks_user handle_events_empty helper16
+                                handle_events_empty helper16
                                 helper18 interrupt_policy_self
-                                user0_is_highest svc\<^sub>a_commute
+                                user0_is_highest
                                 interrupt_policy_mono sorted_by_policy_svc\<^sub>a
-                                helper21 helper22 helper25
-                                sorted_by_policy_U' sorted_by_policy_svc\<^sub>s_hd_svc\<^sub>a
-                                sorted_by_policy_svc\<^sub>a_hd_svc\<^sub>s}
+                                helper21 helper22 helper25}
                 delsimps @{thms disj_not1}
-                addSIs @{thms last_tl'}
-                addSDs @{thms helper28' helper27'})
+                addSIs @{thms last_tl'})
 
             val clarsimp_ctxt2 = (ctxt
                 addsimps @{thms neq_Nil_conv
                                 interrupt_policy_svc\<^sub>a'
                                 interrupt_policy_svc\<^sub>s'
                                 interrupt_policy_U helper25
-                                svc\<^sub>a_commute
                                 handle_events_empty}
                 delsimps @{thms disj_not1}
                 addDs @{thms })
                            |> Splitter.add_split @{thm split_if_asm}
                            |> Splitter.add_split @{thm split_if}
 
+            val clarsimp_ctxt3 = (put_simpset HOL_basic_ss ctxt)
+
             val fastforce_ctxt = (ctxt
                 addsimps @{thms sorted_by_policy_svc\<^sub>s_svc\<^sub>a sched_policy_Some_U
-                                interrupt_policy_U last_tl svc\<^sub>a_commute
+                                interrupt_policy_U last_tl
                                 helper26 sorted_by_policy_svc\<^sub>a''}
                 addDs @{thms })
                            |> Splitter.add_split @{thm split_if_asm}
@@ -380,15 +373,16 @@ done
                                             sorted_by_policy_svc\<^sub>a_single
                                             sorted_by_policy_svc\<^sub>s_single
                                             sorted_by_policy_U_single
-                                            sched_policy_Some_U
-                                            list.set_sel(2)
+                                            sched_picks_user
+                                            set_tl
                                             sorted_by_policy_empty'})
                          THEN'
                          ((TRY' o REPEAT_ALL_NEW)
                              (FORWARD (dresolve_tac ctxt
                                   @{thms helper21' helper27' helper28'})
                                   ctxt)))
-                THEN_ALL_NEW (TRY' (
+                THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
+                THEN' (TRY' (
                         SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
@@ -398,9 +392,7 @@ done
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-(*0*)(*363.812s elapsed time, 1192.408s cpu time, 119.096s GC time*)
-
-(*>*)
+  (*168.858s elapsed time, 494.896s cpu time, 55.792s GC time*)
 done
 
 end

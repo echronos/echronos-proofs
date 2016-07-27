@@ -232,6 +232,8 @@ lemma last_tl_hd:
 
 lemmas last_tl' = last_tl[symmetric, THEN subst, rotated]
 
+lemmas set_tl = list.set_sel(2)[rotated]
+
 lemma AT_U_ATStack:
   "AT x \<in> U \<Longrightarrow> set (butlast (AT x # ATStack x)) \<subseteq> I'
   \<Longrightarrow> ATStack x = []"

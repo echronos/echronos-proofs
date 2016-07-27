@@ -192,8 +192,7 @@ lemma rtos_EIT_inv_holds:
   "0<nbUsers \<and> 0 < nbInts \<Longrightarrow>
   \<lbrace>True\<rbrace> \<parallel>-\<^sub>i \<lbrace>\<acute>EIT_inv \<rbrace> \<lbrace>True\<rbrace>
   eChronos_arm_sched_prop_EIT_prog
-  \<lbrace>False\<rbrace>" 
-
+  \<lbrace>False\<rbrace>"
   unfolding eChronos_arm_sched_prop_EIT_prog_defs
   unfolding oghoare_inv_def EIT_inv_def
   apply (simp add: add_inv_aux_def o_def)
@@ -217,64 +216,71 @@ lemma rtos_EIT_inv_holds:
   apply (clarsimp simp: handle_events_empty user0_is_highest)
   done
 
-  by (tactic \<open>fn thm =>
-        let val simp_ctxt = (clear_simpset @{context})
-          addsimps @{thms eChronos_state_upd_simps HOL.simp_thms HOL.all_simps HOL.ex_simps
-                          option.inject pre.simps snd_conv option.sel last_single
-                          U_simps neq_Nil_conv svc\<^sub>a_commute (*svc\<^sub>s_commute*)
-                          handle_events_empty sorted_by_policy_svc\<^sub>a_single
-                          }
-            val simp_ctxt =  simp_ctxt
-                            |> Splitter.add_split @{thm split_if_asm}
-                            |> Splitter.add_split @{thm split_if}
-
-            val clarsimp_ctxt = (@{context}
-                addsimps @{thms Int_Diff card_insert_if 
+  apply (tactic \<open>fn thm => if Thm.nprems_of thm > 0 then
+        let val ctxt = @{context}
+            val clarsimp_ctxt = (ctxt
+                addsimps @{thms Int_Diff card_insert_if
                                 insert_Diff_if Un_Diff interrupt_policy_I
-                                (*interrupt_policy_U*)
-                                (*sched_picks_user *) handle_events_empty helper16
+                                handle_events_empty helper16
                                 helper18 interrupt_policy_self
-                                user0_is_highest svc\<^sub>a_commute (*svc\<^sub>s_commute*)
+                                user0_is_highest
                                 interrupt_policy_mono sorted_by_policy_svc\<^sub>a
-                                helper21 helper22 helper25
-                                sorted_by_policy_U'
-                                sorted_by_policy_svc\<^sub>a_single})
+                                helper21 helper22 helper25}
+                delsimps @{thms disj_not1}
+                addSIs @{thms last_tl'})
 
-            val clarsimp_ctxt2 = (@{context}
+            val clarsimp_ctxt2 = (ctxt
                 addsimps @{thms neq_Nil_conv
                                 interrupt_policy_svc\<^sub>a'
                                 interrupt_policy_svc\<^sub>s'
                                 interrupt_policy_U helper25
-                                svc\<^sub>a_commute (*svc\<^sub>s_commute*)
-                                handle_events_empty
-                                sorted_by_policy_svc\<^sub>a_single}
-
-
-                addDs @{thms sched_policy_Some_U})
+                                handle_events_empty}
+                delsimps @{thms disj_not1}
+                addDs @{thms })
                            |> Splitter.add_split @{thm split_if_asm}
                            |> Splitter.add_split @{thm split_if}
 
-            val fastforce_ctxt = (@{context}
-                addsimps @{thms sorted_by_policy_svc\<^sub>s_svc\<^sub>a sched_policy_Some_U}
-                addDs @{thms sorted_by_policy_svc\<^sub>s_single})
+            val clarsimp_ctxt3 = (put_simpset HOL_basic_ss ctxt)
+
+            val fastforce_ctxt = (ctxt
+                addsimps @{thms sorted_by_policy_svc\<^sub>s_svc\<^sub>a sched_policy_Some_U
+                                interrupt_policy_U last_tl
+                                helper26 sorted_by_policy_svc\<^sub>a''}
+                addDs @{thms })
+                           |> Splitter.add_split @{thm split_if_asm}
+                           |> Splitter.add_split @{thm split_if}
+
                           in
-        timeit (fn _ => Cache_Tactics.PARALLEL_GOALS_CACHE 21 ((TRY o  SOLVE o DETERM) (
-        (REPEAT_ALL_NEW (resolve_tac @{context}
-                  @{thms subset_eqI subsetI ballI CollectI IntI conjI disjCI impI
-                         union_negI_drop}
-                ORELSE' DETERM o dresolve_tac @{context} @{thms CollectD Set.singletonD
-                                                      ComplD CollectNotD
-                                                      Meson.not_conjD
-                                                      Meson.not_exD}
-                ORELSE' DETERM o eresolve_tac @{context} @{thms IntE conjE exE insertE}
-                ORELSE' CHANGED o safe_asm_full_simp_tac simp_ctxt
-                ORELSE' CHANGED o Classical.clarify_tac (Clasimp.addSss simp_ctxt)
-                ORELSE' SOLVED' (clarsimp_tac clarsimp_ctxt)
+        timeit (fn _ => Cache_Tactics.PARALLEL_GOALS_CACHE 21 ((TRY' o SOLVED' o DETERM') (
+        ((set_to_logic ctxt
+        THEN_ALL_NEW svc_commute ctxt
+        THEN_ALL_NEW (((fn tac => fn i => DETERM (tac i))
+                        (TRY_EVERY_FORWARD' ctxt
+                                            @{thms helper29 helper30
+                                            sorted_by_policy_U
+                                            sorted_by_policy_svc\<^sub>a_single
+                                            sorted_by_policy_svc\<^sub>s_single
+                                            sorted_by_policy_U_single
+                                            sched_picks_user
+                                            set_tl
+                                            sorted_by_policy_empty'})
+                         THEN'
+                         ((TRY' o REPEAT_ALL_NEW)
+                             (FORWARD (dresolve_tac ctxt
+                                  @{thms helper21' helper27' helper28'})
+                                  ctxt)))
+                THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
+                THEN' (TRY' (
+                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
-                ORELSE' SOLVED' (clarsimp_tac @{context} THEN'
+                ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
+                           |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
                                 (fn i => fn st => timed_tac 20 fastforce_ctxt st (fast_force_tac fastforce_ctxt i st)))
-                )
-                ) 1))
-                thm |> Seq.pull |> the |> fst |> Seq.single) end\<close>)
+                )))
+                ))) 1)
+                thm |> Seq.pull |> the |> fst |> Seq.single) end
+        else Seq.empty\<close>)
+  (*5.893s elapsed time, 21.684s cpu time, 0.232s GC time*)
+  done
 
 end

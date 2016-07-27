@@ -16,6 +16,7 @@ imports
   EChronos_arm_sched_prop_contexts_stack_inv
   EChronos_arm_sched_prop_ghostU_inv
   EChronos_arm_sched_prop_ghostP_inv
+  EChronos_arm_sched_prop_EIT_inv
   OG_Composition
 begin
 
