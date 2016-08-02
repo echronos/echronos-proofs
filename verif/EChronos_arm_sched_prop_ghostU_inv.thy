@@ -333,18 +333,19 @@ done
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
                                 (fn i => fn st => timed_tac 20 fastforce_ctxt st (fast_force_tac fastforce_ctxt i st)))
-                ORELSE' SOLVED' (fn i => fn st => timed_tac 5 @{context} st
-                                    (Metis_Tactic.metis_tac [] ATP_Proof_Reconstruct.default_metis_lam_trans @{context} [] i st))
                 )))
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*832.848s elapsed time, 2749.876s cpu time, 263.416s GC time*)
-done
+  (*7*)(*615.147s elapsed time, 2023.568s cpu time, 179.000s GC time*)
+        apply (tactic \<open>set_to_logic @{context} 1\<close>; metis UNIV_I)+
+  done
 
 end

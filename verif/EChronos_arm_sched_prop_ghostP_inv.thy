@@ -275,7 +275,9 @@ lemma rtos_ghostP_inv_holds:
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
@@ -284,7 +286,7 @@ lemma rtos_ghostP_inv_holds:
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*12*)(*193.585s elapsed time, 681.808s cpu time, 67.180s GC time*)
+  (*12*)(*167.208s elapsed time, 600.932s cpu time, 38.168s GC time*)
              apply (clarsimp simp: interrupt_policy_svc\<^sub>a' svc\<^sub>a_interrupt_empty)
             apply clarsimp
             apply (rule conjI; clarsimp)

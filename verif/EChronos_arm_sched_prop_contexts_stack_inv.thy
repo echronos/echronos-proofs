@@ -286,7 +286,9 @@ done
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
@@ -295,7 +297,7 @@ done
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*122.609s elapsed time, 416.928s cpu time, 5.664s GC time*)
+  (*94.674s elapsed time, 283.004s cpu time, 26.720s GC time*)
   done
 
 end

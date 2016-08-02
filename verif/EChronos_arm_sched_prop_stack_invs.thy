@@ -281,7 +281,9 @@ done
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
@@ -290,7 +292,7 @@ done
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*244.981s elapsed time, 588.972s cpu time, 55.924s GC time*)
+  (*221.173s elapsed time, 491.464s cpu time, 50.760s GC time*)
 done
 
 lemma eChronos_arm_sched_prop_ghostP_S_stack_inv_proof:
@@ -383,7 +385,9 @@ done
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
@@ -392,7 +396,7 @@ done
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*168.858s elapsed time, 494.896s cpu time, 55.792s GC time*)
+  (*149.959s elapsed time, 414.808s cpu time, 60.468s GC time*)
 done
 
 end

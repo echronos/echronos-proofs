@@ -271,7 +271,9 @@ lemma rtos_EIT_inv_holds:
                                   ctxt)))
                 THEN' (TRY' (clarsimp_tac clarsimp_ctxt3))
                 THEN' (TRY' (
-                        SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
+                        SOLVED' (fn i => fn st => timed_tac 5 ctxt st
+                                    (Blast.depth_tac ctxt 3 i st))
+                ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
                            |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
@@ -280,7 +282,7 @@ lemma rtos_EIT_inv_holds:
                 ))) 1)
                 thm |> Seq.pull |> the |> fst |> Seq.single) end
         else Seq.empty\<close>)
-  (*5.893s elapsed time, 21.684s cpu time, 0.232s GC time*)
+  (*2.295s elapsed time, 4.428s cpu time, 0.200s GC time*)
   done
 
 end
