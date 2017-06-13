@@ -237,7 +237,7 @@ lemmas set_tl = list.set_sel(2)[rotated]
 lemma AT_U_ATStack:
   "AT x \<in> U \<Longrightarrow> set (butlast (AT x # ATStack x)) \<subseteq> I'
   \<Longrightarrow> ATStack x = []"
-  by (auto split: split_if_asm)
+  by (auto split: if_split_asm)
 
 lemma sorted_by_policy_svc\<^sub>a:
   "sorted_by_policy (x # xs) \<Longrightarrow> svc\<^sub>a \<in> set xs \<Longrightarrow> hd xs \<in> I'"
@@ -288,7 +288,7 @@ lemma sorted_by_policy_U_single:
    hd xs \<in> U \<Longrightarrow> \<exists>x. xs = [x]"
   apply (cases xs)
    apply clarsimp
-  apply (clarsimp split: split_if_asm)
+  apply (clarsimp split: if_split_asm)
   apply (drule_tac x="last xs" in sorted_by_policy_hd)
    apply simp
   apply (clarsimp simp: interrupt_policy_U)
@@ -356,7 +356,7 @@ lemma sorted_by_policy_empty':
     \<Longrightarrow> \<exists>i. xs = [i]"
   apply (cases xs)
    apply clarsimp
-  apply (clarsimp simp: svc\<^sub>a_interrupt_empty split: split_if_asm)
+  apply (clarsimp simp: svc\<^sub>a_interrupt_empty split: if_split_asm)
   done
 
 lemma CollectNotD: "a \<notin> {x. P x} \<Longrightarrow> \<not> P a"

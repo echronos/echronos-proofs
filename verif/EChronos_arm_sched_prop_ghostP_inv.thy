@@ -241,8 +241,8 @@ lemma rtos_ghostP_inv_holds:
                                 handle_events_empty}
                 delsimps @{thms disj_not1}
                 addDs @{thms })
-                           |> Splitter.add_split @{thm split_if_asm}
-                           |> Splitter.add_split @{thm split_if}
+                           |> Splitter.add_split @{thm if_split_asm}
+                           |> Splitter.add_split @{thm if_split}
 
             val clarsimp_ctxt3 = (put_simpset HOL_basic_ss ctxt)
 
@@ -251,8 +251,8 @@ lemma rtos_ghostP_inv_holds:
                                 interrupt_policy_U last_tl
                                 helper26 sorted_by_policy_svc\<^sub>a''}
                 addDs @{thms })
-                           |> Splitter.add_split @{thm split_if_asm}
-                           |> Splitter.add_split @{thm split_if}
+                           |> Splitter.add_split @{thm if_split_asm}
+                           |> Splitter.add_split @{thm if_split}
 
                           in
         timeit (fn _ => Cache_Tactics.PARALLEL_GOALS_CACHE 31 ((TRY' o SOLVED' o DETERM') (
@@ -280,7 +280,7 @@ lemma rtos_ghostP_inv_holds:
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt st (clarsimp_tac clarsimp_ctxt i st))
                 ORELSE' SOLVED' (fn i => fn st => timed_tac 30 clarsimp_ctxt2 st (clarsimp_tac clarsimp_ctxt2 i st))
                 ORELSE' SOLVED' (clarsimp_tac (ctxt delsimps @{thms disj_not1}
-                           |> Splitter.add_split @{thm split_if_asm}) THEN_ALL_NEW
+                           |> Splitter.add_split @{thm if_split_asm}) THEN_ALL_NEW
                                 (fn i => fn st => timed_tac 20 fastforce_ctxt st (fast_force_tac fastforce_ctxt i st)))
                 )))
                 ))) 1)

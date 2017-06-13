@@ -1,9 +1,9 @@
 This is a snapshot of the proof of the scheduler property for the
 eChronos RTOS.
 
-The proof can be run by using the Isabelle2016 proof assistant,
+The proof can be run by using the Isabelle2016-1 proof assistant,
 available from
-http://isabelle.in.tum.de/website-Isabelle2016/index.html.
+http://isabelle.in.tum.de/website-Isabelle2016-1/index.html.
 
 The final result is located in verif/EChronos_arm_sched_prop_bare_proof.thy.
 

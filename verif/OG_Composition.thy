@@ -358,7 +358,7 @@ lemma not_same_wont_merge_prog_com:
 lemma no_merge_imp_not_same_prog_com:
   "merge_prog_com c c' = None \<Longrightarrow> \<not> same_prog_com c c'"
   by (induct c c' rule:same_prog_com.induct, 
-         auto split: split_if_asm option.splits 
+         auto split: if_split_asm option.splits 
                 simp: no_merge_imp_not_same_prog_list_aux )
 
 lemma no_merge_iff_not_same_prog_com:
@@ -376,12 +376,12 @@ lemma merge_ann_com_pre:
    pre x1 \<inter> pre x2 = pre x3"
   apply (induct x1 arbitrary:x2 x3, simp_all)
        apply (clarsimp, drule merge_ann_com.elims,
-              simp_all add: split_if)
+              simp_all add: if_split)
       apply (drule merge_ann_com.elims,
-             simp_all add: split_if,
+             simp_all add: if_split,
              clarsimp split: option.splits)+
   apply (drule merge_ann_com.elims,
-               simp_all add: split_if)       
+               simp_all add: if_split)       
   done
 
 (*<*)
@@ -701,7 +701,7 @@ lemma interfree_composition:
   apply (erule_tac x="rrp\<inter>I" in allE, erule impE, blast)
   apply (erule_tac x="rrp\<inter>I'" in allE, erule impE, blast)
   apply (auto simp: com_validity_def SEM_def)[1] 
-  apply blast 
+  apply fastforce 
   done
   (*>*)  
 

@@ -1,5 +1,5 @@
 (*
- * Copyright 2016, NICTA
+ * Copyright 2014, NICTA
  *
  * This software may be distributed and modified according to the terms of
  * the BSD 2-Clause license. Note that NO WARRANTY is provided.
@@ -13,8 +13,9 @@
 *)
 
 theory Eisbach_Methods
-imports "~~/src/HOL/Eisbach/Eisbach_Tools" 
-        "subgoal_focus/Subgoal_Methods"
+imports "subgoal_focus/Subgoal_Methods"
+        "~~/src/HOL/Eisbach/Eisbach_Tools"
+        Rule_By_Method
 begin
 
 
@@ -28,7 +29,7 @@ method_setup print_raw_goal = \<open>Scan.succeed (fn ctxt => fn facts =>
 
 ML \<open>fun method_evaluate text ctxt facts = 
   Method.NO_CONTEXT_TACTIC ctxt
-    (Method_Closure.method_evaluate text ctxt facts)\<close>
+    (Method.evaluate_runtime text ctxt facts)\<close>
 
 
 method_setup print_headgoal = 
@@ -41,9 +42,10 @@ method_setup print_headgoal =
 section \<open>Simple Combinators\<close>
 
 method_setup defer_tac = \<open>Scan.succeed (fn _ => SIMPLE_METHOD (defer_tac 1))\<close>
+method_setup prefer_last = \<open>Scan.succeed (fn _ => SIMPLE_METHOD (PRIMITIVE (Thm.permute_prems 0 ~1)))\<close>
 
 method_setup all =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let
      fun tac i st' =
        Goal.restrict i 1 st'
@@ -54,15 +56,24 @@ method_setup all =
 \<close>
 
 method_setup determ =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let
      fun tac st' = method_evaluate m ctxt facts st'
 
    in SIMPLE_METHOD (DETERM tac) facts end)
 \<close>
+
+method_setup changed =
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
+   let
+     fun tac st' = method_evaluate m ctxt facts st'
+
+   in SIMPLE_METHOD (CHANGED tac) facts end)
+\<close>
+
  
 method_setup timeit =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let 
      fun timed_tac st seq = Seq.make (fn () => Option.map (apsnd (timed_tac st)) 
        (timeit (fn () => (Seq.pull seq))));
@@ -75,12 +86,12 @@ method_setup timeit =
  
  
 method_setup timeout =
- \<open>Scan.lift Parse.int -- Method_Closure.method_text >> (fn (i,m) => fn ctxt => fn facts =>
+ \<open>Scan.lift Parse.int -- Method.text_closure >> (fn (i,m) => fn ctxt => fn facts =>
    let 
      fun str_of_goal th = Pretty.string_of (Goal_Display.pretty_goal ctxt th);
      
-     fun limit st f x = TimeLimit.timeLimit (Time.fromSeconds i) f x 
-       handle TimeLimit.TimeOut => error ("Method timed out:\n" ^ (str_of_goal st));
+     fun limit st f x = Timeout.apply (Time.fromSeconds i) f x
+       handle Timeout.TIMEOUT _ => error ("Method timed out:\n" ^ (str_of_goal st));
       
      fun timed_tac st seq = Seq.make (limit st (fn () => Option.map (apsnd (timed_tac st)) 
        (Seq.pull seq)));
@@ -98,7 +109,7 @@ text \<open>The following @{text fails} and @{text succeeds} methods protect the
       The @{text fails} method inverts success, only succeeding if the given method would fail.\<close>
 
 method_setup fails =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let
      fun fail_tac st' = 
        (case Seq.pull (method_evaluate m ctxt facts st') of
@@ -109,7 +120,7 @@ method_setup fails =
 \<close>
 
 method_setup succeeds =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let
      fun can_tac st' = 
        (case Seq.pull (method_evaluate m ctxt facts st') of
@@ -209,6 +220,10 @@ lemma context_conjunction'I:
   apply assumption
   done
 
+lemma conjunction'I:
+  "PROP P \<Longrightarrow> PROP Q \<Longrightarrow> PROP P &^& PROP Q"
+  by (rule context_conjunction'I; simp)
+
 lemma conjunction'E:
   assumes PQ: "PROP P &^& PROP Q"
   assumes PQR: "PROP P \<Longrightarrow> PROP Q \<Longrightarrow> PROP R"
@@ -241,13 +256,13 @@ subsection \<open>Finding a goal based on successful application of a method\<cl
 context begin
 
 method_setup find_goal =
- \<open>Method_Closure.method_text >> (fn m => fn ctxt => fn facts =>
+ \<open>Method.text_closure >> (fn m => fn ctxt => fn facts =>
    let
      fun prefer_first i = SELECT_GOAL 
-       (fn st' => let val _ = warning ("Starting new goal: " ^ Int.toString i) in
+       (fn st' =>
          (case Seq.pull (method_evaluate m ctxt facts st') of
            SOME (st'',_) => Seq.single st''
-         | NONE => Seq.empty) end) i THEN prefer_tac i
+         | NONE => Seq.empty)) i THEN prefer_tac i
 
    in SIMPLE_METHOD (FIRSTGOAL prefer_first) facts end)\<close>
 
@@ -321,6 +336,30 @@ method distinct_subgoals_strong methods m =
 
 end
 
+method forward_solve methods fwd m =
+  (fwd, prefer_last, fold_subgoals, safe_meta_conjuncts, rule conjunction'I,
+   defer_tac, ((intro conjunction'I)?; solves \<open>m\<close>))[1]
+
+method frule_solve methods m uses rule = (forward_solve \<open>frule rule\<close> \<open>m\<close>)
+method drule_solve methods m uses rule = (forward_solve \<open>drule rule\<close> \<open>m\<close>)
+
+notepad begin
+  {
+  fix A B C D E
+  assume ABCD: "A \<Longrightarrow> B \<Longrightarrow> C \<Longrightarrow> D"
+  assume ACD: "A \<Longrightarrow> C \<Longrightarrow> D"
+  assume DE: "D \<Longrightarrow> E"
+  assume B C
+
+  have "A \<Longrightarrow> D"
+  apply (frule_solve \<open>simp add: \<open>B\<close> \<open>C\<close>\<close> rule: ABCD)
+  apply (drule_solve \<open>simp add: \<open>B\<close> \<open>C\<close>\<close> rule: ACD)
+  apply (match premises in A \<Rightarrow> \<open>fail\<close> \<bar> _ \<Rightarrow> \<open>-\<close>)
+  apply assumption
+  done
+  }
+end
+
 
 notepad begin
   {
@@ -347,5 +386,31 @@ notepad begin
   }
 end
 
+section \<open>Attribute methods (for use with rule_by_method attributes)\<close>
+
+method prove_prop_raw for P :: "prop" methods m =
+  (erule thin_rl, rule revcut_rl[of "PROP P"],
+    solves \<open>match conclusion in _ \<Rightarrow> \<open>m\<close>\<close>)
+
+method prove_prop for P :: "prop" = (prove_prop_raw "PROP P" \<open>auto\<close>)
+
+experiment begin
+
+lemma assumes A[simp]:A shows A by (rule [[@\<open>prove_prop A\<close>]])
+
+end
+
+section \<open>Shortcuts for prove_prop. Note these are less efficient than using the raw syntax because
+ the facts are re-proven every time.\<close>
+
+method ruleP for P :: "prop" = (catch \<open>rule [[@\<open>prove_prop "PROP P"\<close>]]\<close> \<open>fail\<close>)
+method insertP for P :: "prop" = (catch \<open>insert [[@\<open>prove_prop "PROP P"\<close>]]\<close> \<open>fail\<close>)[1]
+
+experiment begin
+
+lemma assumes A[simp]:A shows A by (ruleP False | ruleP A)
+lemma assumes A:A shows A by (ruleP "\<And>P. P \<Longrightarrow> P \<Longrightarrow> P", rule A, rule A)
+
+end
 
 end

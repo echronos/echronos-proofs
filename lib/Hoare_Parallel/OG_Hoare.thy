@@ -153,7 +153,8 @@ apply(simp (no_asm) add: L3_5iv L3_5ii Parallel_empty)
 apply(rule conjI)
  apply (blast dest: L3_5i)
 apply(simp add: SEM_def sem_def id_def)
-apply (blast dest: Basic_ntran rtrancl_imp_UN_relpow)
+apply (auto dest: Basic_ntran rtrancl_imp_UN_relpow)
+apply blast
 done
 
 lemma atom_hoare_sound [rule_format]:
@@ -512,13 +513,13 @@ apply (ind_cases "(Parallel Ts, s) -P1\<rightarrow> (Parallel Rs, t)" for Ts s R
 apply(rule conjI)
  apply clarify
  apply(case_tac "i=j")
-  apply(simp split del:split_if)
+  apply(simp split del:if_split)
   apply(erule Strong_Soundness_aux_aux,simp+)
    apply force
   apply force
- apply(clarsimp split del: split_if)
+ apply(clarsimp split del: if_split)
  apply(erule Parallel_Strong_Soundness_aux_aux)
- apply(simp_all add: split del:split_if)
+ apply(simp_all add: split del: if_split)
   apply force
 apply(rule interfree_lemma)
 apply simp_all

@@ -49,7 +49,7 @@ lemma extract_prg_merge_progI:
      apply (clarsimp split: option.splits, rule conjI, clarsimp)
      apply clarsimp
      apply (clarsimp simp: merge_prog_list_aux_def merge_prog_aux_def
-                    split: split_if_asm option.splits)
+                    split: if_split_asm option.splits)
      apply (frule those_length[symmetric], drule those_some, clarsimp)
      apply (clarsimp simp: map_eq_conv_length)
      apply (drule_tac x=i in spec)

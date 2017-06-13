@@ -146,19 +146,11 @@ print_translation \<open>
       | assign_tr' _ = raise Match;
 
     fun annassign_tr' (r :: Abs (x, _, f $ k $ Bound 0) :: ts) =
+    
           quote_tr' (Syntax.const @{syntax_const "_AnnAssign"} $ r $ Syntax_Trans.update_name_tr' f)
             (Abs (x, dummyT, Syntax_Trans.const_abs_tr' k) :: ts)
       | annassign_tr' _ = raise Match;
 
-    fun Parallel_PAR [(Const (@{const_syntax Cons}, _) $
-            (Const (@{const_syntax Pair}, _) $ (Const (@{const_syntax Some},_) $ t1 ) $ t2) $
-            Const (@{const_syntax Nil}, _))] = Syntax.const @{syntax_const "_prg"} $ t1 $ t2
-      | Parallel_PAR [(Const (@{const_syntax Cons}, _) $
-            (Const (@{const_syntax Pair}, _) $ (Const (@{const_syntax Some}, _) $ t1) $ t2) $ ts)] =
-          Syntax.const @{syntax_const "_prgs"} $ t1 $ t2 $ Parallel_PAR [ts]
-      | Parallel_PAR _ = raise Match;
-
-    fun Parallel_tr' ts = Syntax.const @{syntax_const "_PAR"} $ Parallel_PAR ts;
   in
    [(@{const_syntax Collect}, K assert_tr'),
     (@{const_syntax Basic}, K assign_tr'),

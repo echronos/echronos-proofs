@@ -19,8 +19,8 @@ fun timed_tac i ctxt st seq =
   let
     fun str_of_goal th = Pretty.string_of (Goal_Display.pretty_goal ctxt th)
 
-    fun limit f x = TimeLimit.timeLimit (Time.fromSeconds i) f x
-      handle TimeLimit.TimeOut =>
+    fun limit f x = Timeout.apply (Time.fromSeconds i) f x
+      handle Timeout.TIMEOUT _ =>
         let val _ = warning ("Method timed out:\n"(* ^ (str_of_goal st)*))
         in SOME (st, Seq.empty) end
   in
@@ -59,8 +59,8 @@ fun set_to_logic ctxt i =
                           U_simps neq_Nil_conv svc\<^sub>a_commute
                           handle_events_empty
                           })
-                  |> Splitter.add_split @{thm split_if_asm}
-                  |> Splitter.add_split @{thm split_if}
+                  |> Splitter.add_split @{thm if_split_asm}
+                  |> Splitter.add_split @{thm if_split}
   in DETERM (REPEAT_ALL_NEW (resolve_tac ctxt
                   @{thms subset_eqI subsetI ballI CollectI IntI conjI disjCI impI
                          union_negI_drop}
